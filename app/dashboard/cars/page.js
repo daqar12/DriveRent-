@@ -7,6 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 import AdminSidebar from "@/components/AdminSidebar";
 import AddCarModal from "@/components/AddCarModal";
 import Alert from "@/components/Alert";
+import EditCarModal from "@/components/EditCarModal";
 import {
   Plus,
   Edit,
@@ -160,15 +161,6 @@ function CarDetailsModal({ car, isOpen, onClose }) {
                     </div>
                     <div className="text-gray-700">{car.seats || 4} seats</div>
                   </div>
-                  {/* <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center mb-2">
-                      <Zap size={18} className="text-blue-500 mr-2" />
-                      <span className="font-medium">Mileage</span>
-                    </div>
-                    <div className="text-gray-700">
-                      {car.mileage || "N/A"} km
-                    </div>
-                  </div> */}
                 </div>
 
                 {/* Additional Info */}
@@ -245,6 +237,7 @@ export default function AdminCarsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedCar, setSelectedCar] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // ───────── FETCH CARS ─────────
   // ───────── FETCH CARS ─────────
@@ -600,23 +593,23 @@ export default function AdminCarsPage() {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-2">
                             <button
-                              onClick={() =>
-                                router.push(
-                                  `/dashboard/cars/edit/${car._id || car.id}`
-                                )
-                              }
+                              onClick={() => {
+                                setSelectedCar(car);
+                                setShowEditModal(true);
+                              }}
                               className="text-blue-600 hover:text-blue-800 p-1 hover:bg-blue-50 rounded"
                               title="Edit"
                             >
                               <Edit size={18} />
                             </button>
-                            <button
+
+                            {/* <button
                               onClick={() => handleDeleteCar(car._id || car.id)}
                               className="text-red-600 hover:text-red-800 p-1 hover:bg-red-50 rounded"
                               title="Delete"
                             >
                               <Trash2 size={18} />
-                            </button>
+                            </button> */}
                             <button
                               onClick={() => handleViewDetails(car)}
                               className="text-green-600 hover:text-green-800 p-1 hover:bg-green-50 rounded"
@@ -624,7 +617,7 @@ export default function AdminCarsPage() {
                             >
                               <Eye size={18} />
                             </button>
-                            <select
+                            {/* <select
                               value={car.status || "available"}
                               onChange={(e) =>
                                 handleStatusChange(
@@ -637,7 +630,7 @@ export default function AdminCarsPage() {
                               <option value="available">Available</option>
                               <option value="rented">Rented</option>
                               <option value="maintenance">Maintenance</option>
-                            </select>
+                            </select> */}
                           </div>
                         </td>
                       </tr>
@@ -668,6 +661,19 @@ export default function AdminCarsPage() {
           </div>
         </div>
       </div>
+
+      <EditCarModal
+        car={selectedCar}
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        onUpdate={(updatedCar) => {
+          const updatedCars = cars.map((c) =>
+            c._id === updatedCar._id ? updatedCar : c
+          );
+          setCars(updatedCars);
+          setFilteredCars(updatedCars);
+        }}
+      />
 
       {/* Add Car Modal */}
       <AddCarModal

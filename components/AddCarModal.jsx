@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { X, Car, Upload, Loader } from "lucide-react";
 import Alert from "@/components/Alert"; // corrected import path
@@ -8,6 +8,7 @@ import Alert from "@/components/Alert"; // corrected import path
 export default function AddCarModal({ isOpen, onClose }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [locations, setLocations] = useState([]);
   const [formData, setFormData] = useState({
     name: "",
     brand: "",
@@ -18,7 +19,8 @@ export default function AddCarModal({ isOpen, onClose }) {
     fuelType: "Petrol",
     transmission: "Automatic",
     mileage: "",
-    location: "",
+    location_id: "",
+    locationName: "",
     description: "",
     image: "",
     rating: "",
@@ -31,33 +33,53 @@ export default function AddCarModal({ isOpen, onClose }) {
     try {
       const response = await fetch("http://127.0.0.1:4000/api/cars", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to add car");
+      // Always parse JSON safely
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
       }
 
-      const data = await response.json();
-      console.log("Car added:", data);
+      if (!response.ok) {
+        const message = data.message || data.error || "Failed to add car";
+        throw new Error(message);
+      }
 
-      setLoading(false);
+      console.log("Car added:", data);
       Alert.success("Success!", "The car has been added to your fleet.");
       onClose();
       router.push("/dashboard/cars");
     } catch (error) {
-      setLoading(false);
       console.error(error);
       Alert.error(
         "Oops!",
         error.message || "Something went wrong while adding the car."
       );
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch("http://localhost:4000/api/locations");
+        const data = await res.json();
+
+        // adjust if your API wraps data (data.locations)
+        setLocations(data.locations || data);
+      } catch (error) {
+        console.error("Failed to fetch locations", error);
+      }
+    };
+
+    fetchLocations();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -249,15 +271,29 @@ export default function AddCarModal({ isOpen, onClose }) {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Location *
                   </label>
-                  <input
-                    type="text"
-                    name="location"
-                    required
+                  <select
+                    name="location_id"
                     value={formData.location}
-                    onChange={handleChange}
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="New York, NY"
-                  />
+                    onChange={(e) => {
+                      const selected = locations.find(
+                        (loc) => loc._id === e.target.value
+                      );
+                      setFormData((prev) => ({
+                        ...prev,
+                        location_id: selected._id, // send to backend
+                        locationName: selected.name, // store for display
+                      }));
+                    }}
+                    required
+                  >
+                    <option value="">Select location</option>
+                    {locations.map((loc) => (
+                      <option key={loc._id} value={loc._id}>
+                        {loc.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Fuel & Transmission */}

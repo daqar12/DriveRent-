@@ -1,58 +1,69 @@
 // components/HeroSection.jsx
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Search, Calendar, MapPin, Car } from 'lucide-react'
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Search, Calendar, MapPin, Car } from "lucide-react";
+import { Crown, Zap, Truck } from "lucide-react";
 
 export default function HeroSection() {
-  const router = useRouter()
+  const router = useRouter();
   const [search, setSearch] = useState({
-    location: '',
-    pickupDate: '',
-    dropoffDate: '',
-    carType: ''
-  })
-  const [isMounted, setIsMounted] = useState(false)
+    location: "",
+    pickupDate: "",
+    dropoffDate: "",
+    carType: "",
+  });
+  const [isMounted, setIsMounted] = useState(false);
+  const [locations, setLocations] = useState([]);
 
   useEffect(() => {
-    setIsMounted(true)
-    // Set default dates
-    const today = new Date()
-    const tomorrow = new Date(today)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const dayAfter = new Date(today)
-    dayAfter.setDate(dayAfter.getDate() + 2)
+    setIsMounted(true);
 
-    setSearch(prev => ({
+    // Fetch locations from API
+    const fetchLocations = async () => {
+      try {
+        const res = await fetch("http://localhost:4000/api/locations");
+        const data = await res.json();
+        setLocations(data);
+      } catch (error) {
+        console.error("Failed to fetch locations:", error);
+      }
+    };
+    fetchLocations();
+
+    // Set default dates
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const dayAfter = new Date(today);
+    dayAfter.setDate(dayAfter.getDate() + 2);
+
+    setSearch((prev) => ({
       ...prev,
-      pickupDate: tomorrow.toISOString().split('T')[0],
-      dropoffDate: dayAfter.toISOString().split('T')[0]
-    }))
-  }, [])
+      pickupDate: tomorrow.toISOString().split("T")[0],
+      dropoffDate: dayAfter.toISOString().split("T")[0],
+    }));
+  }, []);
 
   const handleSearch = (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const query = new URLSearchParams()
-    if (search.location) query.append('location', search.location)
-    if (search.pickupDate) query.append('pickupDate', search.pickupDate)
-    if (search.dropoffDate) query.append('dropoffDate', search.dropoffDate)
-    if (search.carType) query.append('carType', search.carType)
+    const query = new URLSearchParams();
+    if (search.location) query.append("location", search.location);
+    if (search.pickupDate) query.append("pickupDate", search.pickupDate);
+    if (search.dropoffDate) query.append("dropoffDate", search.dropoffDate);
+    if (search.carType) query.append("carType", search.carType);
 
-    router.push(`/cars?${query.toString()}`)
-  }
+    router.push(`/cars?${query.toString()}`);
+  };
 
   const carTypes = [
-    { label: 'SUV', icon: '🚙' },
-    { label: 'Sedan', icon: '🚗' },
-    { label: 'Luxury', icon: '🏎️' },
-    { label: 'Sports', icon: '🚓' },
-    { label: 'Electric', icon: '⚡' },
-    { label: 'Convertible', icon: '🌞' }
-  ]
-
-  const popularLocations = ['New York', 'Los Angeles', 'Miami', 'Chicago', 'Las Vegas']
+    { label: "SUV", icon: Truck },
+    { label: "Sedan", icon: Car },
+    { label: "Luxury", icon: Crown },
+    { label: "Electric", icon: Zap },
+  ];
 
   if (!isMounted) {
     return (
@@ -63,12 +74,11 @@ export default function HeroSection() {
           </div>
         </div>
       </section>
-    )
+    );
   }
 
   return (
     <section className="relative min-h-[80vh] flex items-center overflow-hidden">
-      
       {/* Background */}
       <div className="absolute inset-0 bg-primary-600">
         <div className="absolute inset-0 bg-black/40"></div>
@@ -83,11 +93,12 @@ export default function HeroSection() {
       {/* Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-8 lg:py-16">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
-
           {/* Left */}
           <div className="text-white">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-sm mb-6">
-              <span className="text-sm font-medium">🎯 Premium Car Rental Service</span>
+              <span className="text-sm font-medium">
+                 Premium Car Rental Service
+              </span>
             </div>
 
             <h1 className="text-4xl lg:text-6xl font-bold mb-4">
@@ -96,7 +107,8 @@ export default function HeroSection() {
             </h1>
 
             <p className="text-lg text-primary-50/60 mb-8 max-w-lg">
-              Experience luxury and comfort with our wide selection of premium vehicles.
+              Experience luxury and comfort with our wide selection of premium
+              vehicles.
             </p>
 
             {/* Stats */}
@@ -120,12 +132,15 @@ export default function HeroSection() {
           <div>
             <div className="bg-white rounded-2xl p-6 shadow-2xl">
               <div className="text-center mb-8">
-                <h3 className="text-2xl font-bold text-secondary-600">Find Your Perfect Ride</h3>
-                <p className="text-secondary-500 mt-2">Search from our premium collection</p>
+                <h3 className="text-2xl font-bold text-secondary-600">
+                  Find Your Perfect Ride
+                </h3>
+                <p className="text-secondary-500 mt-2">
+                  Search from our premium collection
+                </p>
               </div>
 
               <form onSubmit={handleSearch} className="space-y-6">
-
                 {/* Location */}
                 <div>
                   <label className="block text-sm font-medium text-secondary-600 mb-2">
@@ -138,16 +153,18 @@ export default function HeroSection() {
                   <div className="relative">
                     <input
                       type="text"
-                      placeholder="Enter city or airport"
+                      placeholder="Select location"
                       value={search.location}
-                      onChange={(e) => setSearch({ ...search, location: e.target.value })}
-                      className="w-full border border-secondary-500/30 rounded-lg px-4 py-3 pl-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
+                      onChange={(e) =>
+                        setSearch({ ...search, location: e.target.value })
+                      }
                       list="locations"
+                      className="w-full border border-secondary-500/30 rounded-lg px-4 py-3 pl-10 focus:ring-2 focus:ring-primary-500 focus:border-transparent text-base"
                     />
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-secondary-500" />
                     <datalist id="locations">
-                      {popularLocations.map(loc => (
-                        <option key={loc} value={loc} />
+                      {locations.map((loc, index) => (
+                        <option key={loc.name + index} value={loc.name} />
                       ))}
                     </datalist>
                   </div>
@@ -165,8 +182,10 @@ export default function HeroSection() {
                     <input
                       type="date"
                       value={search.pickupDate}
-                      onChange={(e) => setSearch({ ...search, pickupDate: e.target.value })}
-                      min={new Date().toISOString().split('T')[0]}
+                      onChange={(e) =>
+                        setSearch({ ...search, pickupDate: e.target.value })
+                      }
+                      min={new Date().toISOString().split("T")[0]}
                       className="w-full border border-secondary-500/30 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
@@ -181,7 +200,9 @@ export default function HeroSection() {
                     <input
                       type="date"
                       value={search.dropoffDate}
-                      onChange={(e) => setSearch({ ...search, dropoffDate: e.target.value })}
+                      onChange={(e) =>
+                        setSearch({ ...search, dropoffDate: e.target.value })
+                      }
                       min={search.pickupDate}
                       className="w-full border border-secondary-500/30 rounded-lg px-4 py-3 focus:ring-2 focus:ring-primary-500"
                     />
@@ -193,31 +214,38 @@ export default function HeroSection() {
                   <label className="block text-sm font-medium text-secondary-600 mb-3">
                     <span className="flex items-center">
                       <Car className="w-4 h-4 mr-2 text-primary-500" />
-                      Car Type (Optional)
+                      Car Type
                     </span>
                   </label>
 
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                    {carTypes.map(type => (
-                      <button
-                        key={type.label}
-                        type="button"
-                        onClick={() =>
-                          setSearch(prev => ({
-                            ...prev,
-                            carType: prev.carType === type.label ? '' : type.label
-                          }))
-                        }
-                        className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all ${
-                          search.carType === type.label
-                            ? 'bg-primary-500 text-white scale-105'
-                            : 'bg-secondary-500/10 text-secondary-600 hover:bg-secondary-500/20'
-                        }`}
-                      >
-                        <span className="text-xl">{type.icon}</span>
-                        <span className="text-xs font-medium">{type.label}</span>
-                      </button>
-                    ))}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {carTypes.map((type) => {
+                      const Icon = type.icon;
+
+                      return (
+                        <button
+                          key={type.label}
+                          type="button"
+                          onClick={() =>
+                            setSearch((prev) => ({
+                              ...prev,
+                              carType:
+                                prev.carType === type.label ? "" : type.label,
+                            }))
+                          }
+                          className={`flex flex-col items-center justify-center p-3 rounded-lg transition-all ${
+                            search.carType === type.label
+                              ? "bg-primary-500 text-white scale-105"
+                              : "bg-secondary-500/10 text-secondary-600 hover:bg-secondary-500/20"
+                          }`}
+                        >
+                          <Icon className="w-6 h-6 mb-1" />
+                          <span className="text-xs font-medium">
+                            {type.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -228,17 +256,16 @@ export default function HeroSection() {
                 >
                   Search Available Cars
                 </button>
-
               </form>
             </div>
           </div>
-
         </div>
       </div>
       {/* Add bounce animation if not in Tailwind */}
       <style jsx>{`
         @keyframes bounce {
-          0%, 100% {
+          0%,
+          100% {
             transform: translateY(0);
           }
           50% {
@@ -249,7 +276,6 @@ export default function HeroSection() {
           animation: bounce 1.5s infinite;
         }
       `}</style>
-
     </section>
-  )
+  );
 }

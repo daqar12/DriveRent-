@@ -10,7 +10,9 @@ import {
   Settings, 
   LogOut,
   BarChart3 ,
-  UserCircle
+  MessageSquare,
+  UserCircle,
+  Wallet 
 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 
@@ -23,8 +25,10 @@ export default function AdminSidebar() {
     { href: '/dashboard/cars', icon: Car, label: 'Cars' },
     { href: '/dashboard/bookings', icon: Calendar, label: 'Bookings' },
     { href: '/dashboard/users', icon: Users, label: 'Users' },
+    { href: '/dashboard/payment', icon: Wallet  , label: 'Payments' },
+    { href: '/dashboard/masseges', icon: MessageSquare, label: 'Messages' },
     { href: '/dashboard/analytics', icon: BarChart3, label: 'Analytics' },
-    { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
+    // { href: '/dashboard/settings', icon: Settings, label: 'Settings' },
     { href: '/dashboard/profile', icon: UserCircle, label: 'Profile' },
   ]
 
@@ -40,7 +44,7 @@ export default function AdminSidebar() {
         <h2 className="text-2xl font-bold gradient-text">DriveRent Admin</h2>
       </div>
       
-      <nav className="mt-8">
+      <nav className="mt-2">
         <ul className="space-y-2 px-4">
           {menuItems.map((item) => {
             const isActive = pathname === item.href

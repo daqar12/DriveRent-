@@ -1,92 +1,68 @@
 // app/locations/page.js
-'use client'
-import { useState, useEffect } from 'react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
-import { locationService } from '@/services/locationService'
-import { MapPin, Phone, Mail, Clock, Navigation, Car } from 'lucide-react'
-import WhatsAppChatPopup from '@/components/WhatsAppChatPopup'
+"use client";
+
+import { useState, useEffect } from "react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import WhatsAppChatPopup from "@/components/WhatsAppChatPopup";
+import { MapPin, Phone, Mail, Clock, Navigation, Car } from "lucide-react";
+import { GoogleMap, Marker, InfoWindow, useLoadScript } from "@react-google-maps/api";
 
 export default function LocationsPage() {
-  const [locations, setLocations] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [activeLocation, setActiveLocation] = useState(0)
+  const [locations, setLocations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeLocation, setActiveLocation] = useState(0);
+  const [selectedLocation, setSelectedLocation] = useState(null);
+
+  const mapContainerStyle = { width: "100%", height: "300px" };
+  const defaultCenter = { lat: 2.0469, lng: 45.3182 }; // Mogadishu
+
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+  });
 
   useEffect(() => {
-    fetchLocations()
-  }, [])
+    fetchLocations();
+  }, []);
 
   const fetchLocations = async () => {
     try {
-      // Simulate API call
-      setTimeout(() => {
-        setLocations(getMockLocations())
-        setLoading(false)
-      }, 800)
+      const response = await fetch("http://localhost:4000/api/locations");
+      if (!response.ok) throw new Error("Network response was not ok");
+      const data = await response.json();
+      setLocations(data);
     } catch (error) {
-      console.error('Error fetching locations:', error)
-      setLocations(getMockLocations())
-      setLoading(false)
+      console.error("Error fetching locations:", error);
+      setLocations([]);
+    } finally {
+      setLoading(false);
     }
-  }
+  };
 
-  const getMockLocations = () => [
-    {
-      id: 1,
-      name: 'New York Downtown',
-      address: '123 Broadway, New York, NY 10001',
-      phone: '+1 (555) 123-4567',
-      email: 'ny@driverent.com',
-      hours: 'Mon-Sun: 6:00 AM - 12:00 AM',
-      coordinates: { lat: 40.7128, lng: -74.0060 },
-      features: ['24/7 Service', 'Free Parking', 'Car Wash', 'Coffee Lounge']
-    },
-    {
-      id: 2,
-      name: 'New York Airport (JFK)',
-      address: 'JFK International Airport, Terminal 4',
-      phone: '+1 (555) 123-4568',
-      email: 'jfk@driverent.com',
-      hours: '24/7',
-      coordinates: { lat: 40.6413, lng: -73.7781 },
-      features: ['Airport Pickup', 'Express Service', 'Luggage Assistance']
-    },
-    {
-      id: 3,
-      name: 'Boston Center',
-      address: '456 Main Street, Boston, MA 02108',
-      phone: '+1 (555) 123-4569',
-      email: 'boston@driverent.com',
-      hours: 'Mon-Sun: 7:00 AM - 11:00 PM',
-      coordinates: { lat: 42.3601, lng: -71.0589 },
-      features: ['City Center', 'Valet Parking', 'Business Lounge']
-    },
-    {
-      id: 4,
-      name: 'Washington DC',
-      address: '789 Pennsylvania Ave, Washington, DC 20004',
-      phone: '+1 (555) 123-4570',
-      email: 'dc@driverent.com',
-      hours: 'Mon-Sun: 6:00 AM - 12:00 AM',
-      coordinates: { lat: 38.9072, lng: -77.0369 },
-      features: ['Government Area', 'Secure Parking', 'Meeting Rooms']
-    },
-  ]
+  const getMapCenter = () => {
+    if (selectedLocation) {
+      const lat = Number(selectedLocation.lat);
+      const lng = Number(selectedLocation.lng);
+      if (!isNaN(lat) && !isNaN(lng)) return { lat, lng };
+    }
+    return defaultCenter;
+  };
 
-  if (loading) {
+  if (loading)
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
       </div>
-    )
-  }
+    );
+
+  if (loadError) return <div>Error loading map</div>;
+  if (!isLoaded) return <div>Loading map...</div>;
 
   return (
     <div className="min-h-screen">
       <Navbar />
       <WhatsAppChatPopup />
 
-      
       {/* Hero Section */}
       <div className="relative bg-gradient-to-r from-primary-500 via-primary-600 to-primary-700 text-white py-20">
         <div className="absolute inset-0 bg-black/20"></div>
@@ -112,13 +88,14 @@ export default function LocationsPage() {
             <div className="space-y-6">
               {locations.map((location, index) => (
                 <div
-                  key={location.id}
+                  key={`${location.name}-${index}`}
                   className={`bg-white rounded-2xl shadow-lg border-2 p-6 cursor-pointer transition-all duration-300 hover:shadow-xl ${
-                    activeLocation === index 
-                      ? 'border-blue-500' 
-                      : 'border-transparent hover:border-blue-200'
+                    activeLocation === index ? "border-blue-500" : "border-transparent hover:border-blue-200"
                   }`}
-                  onClick={() => setActiveLocation(index)}
+                  onClick={() => {
+                    setActiveLocation(index);
+                    setSelectedLocation(location);
+                  }}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -130,7 +107,14 @@ export default function LocationsPage() {
                           <h3 className="text-xl font-bold text-gray-900">{location.name}</h3>
                           <div className="flex items-center space-x-2 text-blue-600">
                             <Navigation size={16} />
-                            <span className="text-sm font-medium">Get Directions</span>
+                            <a
+                              href={`https://www.google.com/maps/dir/?api=1&destination=${location.lat},${location.lng}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium "
+                            >
+                              Get Directions
+                            </a>
                           </div>
                         </div>
                       </div>
@@ -169,7 +153,7 @@ export default function LocationsPage() {
                       <div className="flex flex-wrap gap-2">
                         {location.features.map((feature, idx) => (
                           <span
-                            key={idx}
+                            key={`${location.name}-feature-${idx}`}
                             className="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium"
                           >
                             {feature}
@@ -189,48 +173,9 @@ export default function LocationsPage() {
 
           {/* Map & Info Sidebar */}
           <div className="space-y-6">
-            {/* Map Placeholder */}
             <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-6 border border-gray-200">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">Location Map</h3>
-                <div className="text-blue-600">
-                  <Navigation size={20} />
-                </div>
-              </div>
-              
-              <div className="bg-gradient-to-br from-blue-100 to-blue-200 rounded-xl h-64 flex items-center justify-center relative overflow-hidden">
-                {/* Simple map visualization */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-32 h-32 border-4 border-blue-300 rounded-full opacity-50"></div>
-                  <div className="w-24 h-24 border-4 border-blue-400 rounded-full opacity-70"></div>
-                  <div className="w-16 h-16 border-4 border-blue-500 rounded-full opacity-90"></div>
-                </div>
-                
-                {/* Location markers */}
-                {locations.map((location, index) => (
-                  <div
-                    key={location.id}
-                    className={`absolute w-8 h-8 rounded-full flex items-center justify-center transform -translate-x-1/2 -translate-y-1/2 cursor-pointer ${
-                      activeLocation === index
-                        ? 'bg-blue-600 text-white shadow-lg scale-125'
-                        : 'bg-white text-blue-600 shadow'
-                    }`}
-                    style={{
-                      left: `${20 + (index * 20)}%`,
-                      top: `${40 + (index % 2 === 0 ? 10 : -10)}%`
-                    }}
-                    onClick={() => setActiveLocation(index)}
-                  >
-                    <MapPin size={16} />
-                  </div>
-                ))}
-              </div>
-              
-              <div className="mt-4 text-center">
-                <p className="text-gray-600 text-sm">
-                  Click on markers to view location details
-                </p>
-              </div>
+              <h3 className="text-lg font-bold text-gray-900">Head Quarter</h3>
+              <p className="text-gray-600">Mogadishu, Somalia</p>
             </div>
 
             {/* Quick Info */}
@@ -305,8 +250,8 @@ export default function LocationsPage() {
           </div>
         </div>
       </div>
-      
+
       <Footer />
     </div>
-  )
+  );
 }

@@ -9,6 +9,7 @@ import HeroSection from "@/components/HeroSection";
 import { getMockCars } from "@/data/mockCars";
 import WhatsAppFloat from "@/components/WhatsAppFloat";
 import WhatsAppChatPopup from "@/components/WhatsAppChatPopup";
+import Testimonials from "@/components/Testimonials";
 
 const reviews = [
   {
@@ -194,58 +195,11 @@ export default function HomePage() {
 
       {/* Testimonials */}
       <section className="py-16 bg-gradient-to-r from-blue-50 to-blue-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Customer Reviews
-            </h2>
-            <p className="text-gray-600">What our customers say about us</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {reviews.map((review) => (
-              <div
-                key={review.id}
-                className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-shadow duration-300"
-              >
-                <div className="flex items-center mb-4">
-                  <div className="flex text-yellow-400 mr-2">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        size={20}
-                        fill={i < review.rating ? "currentColor" : "none"}
-                      />
-                    ))}
-                  </div>
-                  <span className="font-semibold">{review.rating}/5</span>
-                </div>
-                <p className="text-gray-700 mb-4 italic">"{review.comment}"</p>
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold text-gray-900">
-                    {review.name}
-                  </span>
-                  <span className="text-gray-500 text-sm">{review.date}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Add more review prompt */}
-          <div className="text-center mt-12">
-            <a
-              href="/reviews"
-              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Read more reviews
-              <ChevronRight size={18} className="ml-1" />
-            </a>
-          </div>
-        </div>
+        <Testimonials />
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
+      {/* <section className="py-16 bg-gradient-to-r from-gray-900 to-gray-800 text-white">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500 rounded-full mb-6">
             <Star className="text-white" size={28} />
@@ -275,7 +229,7 @@ export default function HomePage() {
             Need help? Use the WhatsApp button to chat instantly!
           </p>
         </div>
-      </section>
+      </section> */}
 
       <Footer />
     </div>
